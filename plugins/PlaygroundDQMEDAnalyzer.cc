@@ -1,85 +1,12 @@
-// -*- C++ -*-
-//
-// Package:    Validation/PlaygroundDQMEDAnalyzer
-// Class:      PlaygroundDQMEDAnalyzer
-//
-/**\class PlaygroundDQMEDAnalyzer PlaygroundDQMEDAnalyzer.cc Validation/PlaygroundDQMEDAnalyzer/plugins/PlaygroundDQMEDAnalyzer.cc
+#include "Validation/PlaygroundDQMEDAnalyzer/interface/PlaygroundDQMEDAnalyzer.h"
 
- Description: [one line class summary]
-
- Implementation:
-     [Notes on implementation]
-*/
-//
-// Original Author:  Yu-Wei Kao
-//         Created:  Fri, 27 Jan 2023 08:17:27 GMT
-//
-//
-
-#include <string>
-
-// user include files
-#include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "DQMServices/Core/interface/DQMEDAnalyzer.h"
-
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-
-#include "DQMServices/Core/interface/MonitorElement.h"
-
-//
-// class declaration
-//
-
-
-class PlaygroundDQMEDAnalyzer : public DQMEDAnalyzer {
-public:
-  explicit PlaygroundDQMEDAnalyzer(const edm::ParameterSet&);
-  ~PlaygroundDQMEDAnalyzer() override;
-
-  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-
-private:
-  void bookHistograms(DQMStore::IBooker&, edm::Run const&, edm::EventSetup const&) override;
-
-  void analyze(const edm::Event&, const edm::EventSetup&) override;
-
-  // ------------ member data ------------
-  std::string folder_;
-  MonitorElement* example_;
-  MonitorElement* example2D_;
-  MonitorElement* example3D_;
-  MonitorElement* exampleTProfile_;
-  MonitorElement* exampleTProfile2D_;
-  int eventCount_ = 0;
-};
-
-//
-// constants, enums and typedefs
-//
-
-//
-// static data member definitions
-//
-
-//
-// constructors and destructor
-//
 PlaygroundDQMEDAnalyzer::PlaygroundDQMEDAnalyzer(const edm::ParameterSet& iConfig)
-    : folder_(iConfig.getParameter<std::string>("folder")) {
-  // now do what ever initialization is needed
-}
+    : folder_(iConfig.getParameter<std::string>("folder")),
+      myTag(iConfig.getParameter<std::string>( "DataType" )),
+      calibration_flags(iConfig.getParameter<std::vector<int> >( "CalibrationFlags" ))
+{}
 
-PlaygroundDQMEDAnalyzer::~PlaygroundDQMEDAnalyzer() {
-  // do anything here that needs to be done at desctruction time
-  // (e.g. close files, deallocate resources etc.)
-}
-
-//
-// member functions
-//
+PlaygroundDQMEDAnalyzer::~PlaygroundDQMEDAnalyzer() {}
 
 // ------------ method called for each event  ------------
 void PlaygroundDQMEDAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
@@ -108,13 +35,23 @@ void PlaygroundDQMEDAnalyzer::bookHistograms(DQMStore::IBooker& ibook, edm::Run 
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void PlaygroundDQMEDAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-  // The following says we do not know what parameters are allowed so do no
-  // validation
-  // Please change this to state exactly what you do use, even if it is no
-  // parameters
   edm::ParameterSetDescription desc;
-  desc.add<std::string>("folder", "MY_FOLDER");
+  desc.add<std::string>("folder", "HGCAL/RecHits");
+  desc.add<std::string>("DataType", "beam");
+  desc.add<std::vector<int>>("CalibrationFlags", {1, 1, 0, 0, 0, 0, 0, 0, 0, 0});
   descriptions.add("playgrounddqmedanalyzer", desc);
+  //---------- Definitions of calibration flags ----------#
+  // calibration_flags[0]: pedestal subtraction
+  // calibration_flags[1]: cm subtraction
+  // calibration_flags[2]: BX-1 correction
+  // calibration_flags[3]: gain linearization
+  // calibration_flags[4]: charge collection efficiency
+  // calibration_flags[5]: MIP scale
+  // calibration_flags[6]: EM scale
+  // calibration_flags[7]: zero suppression
+  // calibration_flags[8]: hit energy calibration
+  // calibration_flags[9]: ToA conversion
+  //------------------------------------------------------#
 }
 
 // define this as a plug-in
