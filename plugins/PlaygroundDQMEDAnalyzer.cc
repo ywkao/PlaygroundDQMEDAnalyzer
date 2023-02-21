@@ -19,7 +19,7 @@ PlaygroundDQMEDAnalyzer::PlaygroundDQMEDAnalyzer(const edm::ParameterSet& iConfi
     if(calibration_flags[0]) enable_pedestal_subtraction();
     if(calibration_flags[1]) enable_cm_subtraction();
 
-    Load_metaData();
+    calib_loader.loadParameters();
 }
 
 PlaygroundDQMEDAnalyzer::~PlaygroundDQMEDAnalyzer() {
@@ -92,7 +92,7 @@ void PlaygroundDQMEDAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
 
         // perform pedestal subtraction
         if(flag_perform_pedestal_subtraction) {
-            double pedestal = map_pedestals[globalChannelId];
+            double pedestal = calib_loader.map_pedestals[globalChannelId];
             adc_double -= pedestal;
         }
 
@@ -111,7 +111,7 @@ void PlaygroundDQMEDAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
         } else if(globalChannelId % 39 == 38) {
             // CM subtraction for channel 37
             if(flag_perform_cm_subtraction) {
-                std::vector<double> parameters = map_cm_parameters[globalChannelId-1];
+                std::vector<double> parameters = calib_loader.map_cm_parameters[globalChannelId-1];
                 double slope = parameters[0];
                 double intercept = parameters[1];
                 double correction = adc_channel_CM*slope + intercept;
@@ -123,7 +123,7 @@ void PlaygroundDQMEDAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
 
         // perform common mode subtraction
         if(flag_perform_cm_subtraction) {
-            std::vector<double> parameters = map_cm_parameters[globalChannelId];
+            std::vector<double> parameters = calib_loader.map_cm_parameters[globalChannelId];
             double slope = parameters[0];
             double intercept = parameters[1];
             double correction = adc_channel_CM*slope + intercept;
@@ -214,42 +214,6 @@ void PlaygroundDQMEDAnalyzer::Init(TTree *tree)
 void PlaygroundDQMEDAnalyzer::enable_pedestal_subtraction() { flag_perform_pedestal_subtraction = true; tag_calibration = "_ped_subtracted"; }
 
 void PlaygroundDQMEDAnalyzer::enable_cm_subtraction() { flag_perform_cm_subtraction = true; tag_calibration = "_cm_subtracted"; }
-
-void PlaygroundDQMEDAnalyzer::Load_metaData()
-{
-    TString csv_file_name = "./meta_conditions/calibration_parameters.csv";
-    printf("[INFO] Load calibration parameters: %s\n", csv_file_name.Data());
-
-    std::string line;
-    std::ifstream loaded_csv_file(csv_file_name.Data());
-
-    if(loaded_csv_file.is_open()) {
-        while(getline(loaded_csv_file, line)) {
-            // skip comments
-            if(line.find("#")!=std::string::npos) continue;
-
-            std::size_t found_1st_index = line.find(",");
-            std::size_t found_2nd_index = line.find(",", found_1st_index+1, 1);
-            std::size_t found_3rd_index = line.find(",", found_2nd_index+1, 1);
-            std::size_t found_4th_index = line.find(",", found_3rd_index+1, 1);
-
-            int channel_id   = std::stoi( line.substr(0,found_1st_index) );
-            double pedestal  = std::stod( line.substr(found_1st_index+1, found_2nd_index) );
-            double slope     = std::stod( line.substr(found_2nd_index+1, found_3rd_index) );
-            double intercept = std::stod( line.substr(found_3rd_index+1, found_4th_index) );
-
-            std::vector<double> v = {slope, intercept};
-            map_pedestals[channel_id] = pedestal;
-            map_cm_parameters[channel_id] = v;
-
-            printf("channel_id = %d, pedestal = %.3f, slope = %.3f, intercept = %6.3f\n",
-                    channel_id, map_pedestals[channel_id], map_cm_parameters[channel_id][0], map_cm_parameters[channel_id][1] );
-        }
-        loaded_csv_file.close();
-    } else {
-        std::cout << "[ERROR] unable to open " << csv_file_name.Data() << std::endl;
-    }
-}
 
 void PlaygroundDQMEDAnalyzer::fill_histograms()
 {

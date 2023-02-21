@@ -19,6 +19,7 @@
 
 #include "Validation/PlaygroundDQMEDAnalyzer/interface/hgcalhit.h" // define DetectorId
 #include "Validation/PlaygroundDQMEDAnalyzer/interface/RunningCollection.h"
+#include "Validation/PlaygroundDQMEDAnalyzer/interface/LoadCalibrationParameters.h"
 
 class PlaygroundDQMEDAnalyzer : public DQMEDAnalyzer {
 public:
@@ -38,7 +39,6 @@ private:
   virtual void     enable_pedestal_subtraction();
   virtual void     enable_cm_subtraction();
 
-  virtual void     Load_metaData(); // calibration parameters, i.e. pedestal, CM correlation, etc.
   virtual void     fill_histograms();
   virtual void     fill_profiles(int globalChannelId_, double adc_double_);
 
@@ -54,14 +54,13 @@ private:
   TString tag_calibration;
   TString tag_channelId;
 
+  CalibrationParameterLoader calib_loader;
+
   RunningCollection myRunStatCollection;
   RunningStatistics myRecorder;
 
   bool flag_perform_pedestal_subtraction;
   bool flag_perform_cm_subtraction;
-
-  std::map<int, double> map_pedestals;
-  std::map<int, std::vector<double> > map_cm_parameters;
 
   int globalChannelId;
   double adc_double;
