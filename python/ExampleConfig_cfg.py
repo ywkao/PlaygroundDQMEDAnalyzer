@@ -18,5 +18,7 @@ process.load("Validation.PlaygroundDQMEDAnalyzer.playgrounddqmedanalyzer_cfi")
 process.DQMStore = cms.Service("DQMStore")
 
 process.load("DQMServices.FileIO.DQMFileSaverOnline_cfi")
+process.dqmSaver.tag = 'TEST'
+process.dqmSaver.path = './eos/'
 
 process.p = cms.Path(process.playgrounddqmedanalyzer + process.dqmSaver)
