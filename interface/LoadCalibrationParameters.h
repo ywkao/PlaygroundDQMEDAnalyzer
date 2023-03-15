@@ -49,8 +49,8 @@ void CalibrationParameterLoader::loadParameters() {
             map_pedestals[channel_id] = pedestal;
             map_cm_parameters[channel_id] = v;
 
-            printf("channel_id = %d, pedestal = %.3f, slope = %.3f, intercept = %6.3f\n",
-                    channel_id, map_pedestals[channel_id], map_cm_parameters[channel_id][0], map_cm_parameters[channel_id][1] );
+            //printf("channel_id = %d, pedestal = %.3f, slope = %.3f, intercept = %6.3f\n",
+            //        channel_id, map_pedestals[channel_id], map_cm_parameters[channel_id][0], map_cm_parameters[channel_id][1] );
         }
         loaded_csv_file.close();
     } else {
