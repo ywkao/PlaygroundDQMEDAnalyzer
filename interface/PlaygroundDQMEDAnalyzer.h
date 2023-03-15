@@ -80,6 +80,9 @@ private:
   MonitorElement* h_toa      ;
   MonitorElement* h_trigtime ;
 
+  MonitorElement* h2d_adc    ;
+  MonitorElement* p2d_adc    ;
+
   // summary of physical quantities
   MonitorElement* p_adc      ;
   MonitorElement* p_adcm     ;

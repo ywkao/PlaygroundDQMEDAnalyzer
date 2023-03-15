@@ -152,6 +152,9 @@ void PlaygroundDQMEDAnalyzer::bookHistograms(DQMStore::IBooker& ibook, edm::Run 
     h_toa       = ibook.book1D("h_toa"      + tag_channelId , ";ToA;Entries"      , 500 , 0   , 500 );
     h_trigtime  = ibook.book1D("h_trigtime" + tag_channelId , ";trigtime;Entries" , 500 , 0   , 500 );
 
+    h2d_adc       = ibook.book2D     ("h2d_adc"      + tag_channelId , ";CM #minus CM_{pedestal};ADC #minus ADC_{pedestal}", 19, -9.5, 9.5, 39, -9.5, 29.5);
+    p2d_adc       = ibook.bookProfile("p2d_adc"      + tag_channelId , ";CM #minus CM_{pedestal};ADC #minus ADC_{pedestal}", 19, -9.5, 9.5, 39, -9.5, 29.5);
+
     // summary of physical quantities
     p_adc       = ibook.bookProfile("p_adc"      , ";channel;ADC"      , 234 , 0 , 234 , 175 , -25 , 150 );
     p_adcm      = ibook.bookProfile("p_adcm"     , ";channel;ADC-1"    , 234 , 0 , 234 , 550 , -50 , 500 );
@@ -218,6 +221,9 @@ void PlaygroundDQMEDAnalyzer::enable_cm_subtraction() { flag_perform_cm_subtract
 void PlaygroundDQMEDAnalyzer::fill_histograms()
 {
     myRecorder.add_entry(adc_channel_CM, adc_double);
+
+    h2d_adc    -> Fill(adc_channel_CM, adc_double);
+    p2d_adc    -> Fill(adc_channel_CM, adc_double);
 
     h_adc      -> Fill(adc_double);
     h_adcm     -> Fill(adcm);
