@@ -132,7 +132,7 @@ void PlaygroundDQMEDAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
 
         fill_profiles(globalChannelId, adc_double);
 
-        if(globalChannelId==7) fill_histograms();
+        if(globalChannelId==22) fill_histograms();
     }
 }
 
@@ -152,8 +152,9 @@ void PlaygroundDQMEDAnalyzer::bookHistograms(DQMStore::IBooker& ibook, edm::Run 
     h_toa       = ibook.book1D("h_toa"      + tag_channelId , ";ToA;Entries"      , 500 , 0   , 500 );
     h_trigtime  = ibook.book1D("h_trigtime" + tag_channelId , ";trigtime;Entries" , 500 , 0   , 500 );
 
-    h2d_adc       = ibook.book2D     ("h2d_adc"      + tag_channelId , ";CM #minus CM_{pedestal};ADC #minus ADC_{pedestal}", 19, -9.5, 9.5, 39, -9.5, 29.5);
-    p2d_adc       = ibook.bookProfile("p2d_adc"      + tag_channelId , ";CM #minus CM_{pedestal};ADC #minus ADC_{pedestal}", 19, -9.5, 9.5, 39, -9.5, 29.5);
+    h2d_adc          = ibook.book2D      ("h2d_adc"          + tag_channelId , ";CM #minus CM_{pedestal};ADC #minus ADC_{pedestal}", 19, -9.5, 9.5, 39, -9.5, 29.5);
+    p2d_adc          = ibook.bookProfile ("p2d_adc"          + tag_channelId , ";CM #minus CM_{pedestal};ADC #minus ADC_{pedestal}", 19, -9.5, 9.5, 39, -9.5, 29.5);
+    h2d_adc_trigtime = ibook.book2D      ("h2d_adc_trigtime" + tag_channelId , ";Trigger time;ADC #minus ADC_{pedestal}"           , 50,   30,  80, 39, -9.5, 29.5);
 
     // summary of physical quantities
     p_adc       = ibook.bookProfile("p_adc"      , ";channel;ADC"      , 234 , 0 , 234 , 175 , -25 , 150 );
@@ -211,7 +212,7 @@ void PlaygroundDQMEDAnalyzer::Init(TTree *tree)
     flag_perform_cm_subtraction = false;
 
     tag_calibration = "";
-    tag_channelId = "_channel_7";
+    tag_channelId = "_channel_22";
 }
 
 void PlaygroundDQMEDAnalyzer::enable_pedestal_subtraction() { flag_perform_pedestal_subtraction = true; tag_calibration = "_ped_subtracted"; }
@@ -222,8 +223,9 @@ void PlaygroundDQMEDAnalyzer::fill_histograms()
 {
     myRecorder.add_entry(adc_channel_CM, adc_double);
 
-    h2d_adc    -> Fill(adc_channel_CM, adc_double);
-    p2d_adc    -> Fill(adc_channel_CM, adc_double);
+    h2d_adc          -> Fill(adc_channel_CM, adc_double);
+    p2d_adc          -> Fill(adc_channel_CM, adc_double);
+    h2d_adc_trigtime -> Fill(trigtime      , adc_double);
 
     h_adc      -> Fill(adc_double);
     h_adcm     -> Fill(adcm);

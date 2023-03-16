@@ -82,6 +82,7 @@ private:
 
   MonitorElement* h2d_adc    ;
   MonitorElement* p2d_adc    ;
+  MonitorElement* h2d_adc_trigtime    ;
 
   // summary of physical quantities
   MonitorElement* p_adc      ;

@@ -5,13 +5,15 @@ ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetOptStat("nemrou");
 ROOT.gStyle.SetPalette(ROOT.kCherry)
 ROOT.TColor.InvertPalette()
+
+tag_channel = "_channel_22"
     
 def make_h2d_plot(fname, tag):
     fin = ROOT.TFile(fname, "R")
     d = fin.GetDirectory("DQMData/Run 1/HGCAL/Run summary/RecHits", True)
     
-    h2d = d.Get("h2d_adc_channel_7")
-    p2d = d.Get("p2d_adc_channel_7")
+    h2d = d.Get("h2d_adc" + tag_channel)
+    p2d = d.Get("p2d_adc" + tag_channel)
     
     #--------------------------------------------------
     # Linear fit
@@ -38,9 +40,19 @@ def make_h2d_plot(fname, tag):
     p2d.SetLineWidth(2)
     p2d.Draw("p,same")
     
-    output = "./eos/h2d_adc_channel_7" + tag
+    output = "./eos/h2d_adc" + tag_channel + tag
     c1.SaveAs(output + ".png")
     c1.SaveAs(output + ".pdf")
+
+    #--------------------------------------------------
+    # plot trig time
+    #--------------------------------------------------
+    h2d_trig = d.Get("h2d_adc_trigtime" + tag_channel)
+    h2d_trig.Draw("colz")
+    output = "./eos/h2d_adc_trigtime" + tag_channel + tag
+    c1.SaveAs(output + ".png")
+    c1.SaveAs(output + ".pdf")
+
 
 if __name__ == "__main__":
     make_h2d_plot("./eos/DQM_V0001_TEST_R000000001.root", "")
