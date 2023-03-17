@@ -42,9 +42,7 @@ private:
   virtual void     fill_histograms();
   virtual void     fill_profiles(int globalChannelId_, double adc_double_);
 
-  // TODO: think whether to export parameters at this stage
-  //virtual void     export_pedestals();
-  //virtual void     export_cm_parameters();
+  virtual void     export_calibration_parameters();
 
   // ------------ member data ------------
   std::string folder_;
@@ -93,9 +91,9 @@ private:
   MonitorElement* p_status   ;
 
   // summary for running statistics
-  MonitorElement* h_correlation ;
-  MonitorElement* h_slope       ;
-  MonitorElement* h_intercept   ;
+  MonitorElement* p_correlation ;
+  MonitorElement* p_slope       ;
+  MonitorElement* p_intercept   ;
 
   //--------------------------------------------------
   // for reading ntuple (temporary)

@@ -23,22 +23,9 @@ PlaygroundDQMEDAnalyzer::PlaygroundDQMEDAnalyzer(const edm::ParameterSet& iConfi
 }
 
 PlaygroundDQMEDAnalyzer::~PlaygroundDQMEDAnalyzer() {
-
-    // The following code will cause exception messages
-    // terminate called after throwing an instance of 'cms::Exception'
-    //   what():  An exception of category 'LogicError' occurred.
-    //   Exception Message:
-    //   MonitorElement h_correlation not backed by any data!
-
-    /*
-    // summary for running statistics
-    std::vector<RunningStatistics> mRs = myRunStatCollection.get_vector_running_statistics();
-    for(int channelId=0; channelId<234; ++channelId) {
-        h_correlation -> setBinContent( channelId+1, mRs[channelId].get_correlation() );
-        h_slope       -> setBinContent( channelId+1, mRs[channelId].get_slope()       );
-        h_intercept   -> setBinContent( channelId+1, mRs[channelId].get_intercept()   );
-    }
-    */
+    // TODO: is the destructor a proper place to export calibration parameters?
+    export_calibration_parameters();
+    printf("[INFO] This is the end of the job\n");
 }
 
 // ------------ method called for each event  ------------
@@ -133,6 +120,15 @@ void PlaygroundDQMEDAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
         fill_profiles(globalChannelId, adc_double);
 
         if(globalChannelId==22) fill_histograms();
+    } // end of ntpule hit loop
+
+    // summary for running statistics
+    std::vector<RunningStatistics> mRs = myRunStatCollection.get_vector_running_statistics();
+    for(int channelId=0; channelId<234; ++channelId) {
+        // TODO: how to set uncertainty?
+        p_correlation -> Fill( channelId+1, mRs[channelId].get_correlation() );
+        p_slope       -> Fill( channelId+1, mRs[channelId].get_slope()       );
+        p_intercept   -> Fill( channelId+1, mRs[channelId].get_intercept()   );
     }
 }
 
@@ -165,12 +161,30 @@ void PlaygroundDQMEDAnalyzer::bookHistograms(DQMStore::IBooker& ibook, edm::Run 
     p_status    = ibook.bookProfile("p_status"   , ";channel;status"   , 234 , 0 , 234 , 3   , -1  , 1   );
 
     // summary of running statistics
-    h_correlation = ibook.book1D("h_correlation" , ";channel;Correlation" , 234 , -0.5 , 233.5);
-    h_slope       = ibook.book1D("h_slope"       , ";channel;Slope"       , 234 , -0.5 , 233.5);
-    h_intercept   = ibook.book1D("h_intercept"   , ";channel;Intercept"   , 234 , -0.5 , 233.5);
+    p_correlation = ibook.bookProfile("p_correlation" , ";channel;Correlation" , 234 , -0.5 , 233.5, 10, 0, 1);
+    p_slope       = ibook.bookProfile("p_slope"       , ";channel;Slope"       , 234 , -0.5 , 233.5, 100, -5, +5);
+    p_intercept   = ibook.bookProfile("p_intercept"   , ";channel;Intercept"   , 234 , -0.5 , 233.5, 100, -5, +5);
 }
 
 // ------------ auxilliary methods  ------------
+void PlaygroundDQMEDAnalyzer::export_calibration_parameters() {
+    TString csv_file_name = "./meta_conditions/output_DQMEDAnalyzer_calibration_parameters" + tag_calibration + ".csv";
+    std::ofstream myfile(csv_file_name.Data());
+    myfile << "#------------------------------------------------------------\n";
+    myfile << "# info: " << myTag.Data() << "\n";
+    myfile << "# columns: channel, pedestal, slope, intercept, correlation\n";
+    myfile << "#------------------------------------------------------------\n";
+
+    std::vector<RunningStatistics> mRs = myRunStatCollection.get_vector_running_statistics();
+
+    for(int i=0; i<234; ++i) {
+        myfile << Form("%d,%.2f,%.2f,%.2f,%.2f\n", i, mRs[i].get_mean_adc(), mRs[i].get_slope(), mRs[i].get_intercept(), mRs[i].get_correlation());
+    }
+
+    myfile.close();
+    printf("[INFO] export CM parameters: %s\n", csv_file_name.Data());
+}
+
 Long64_t PlaygroundDQMEDAnalyzer::LoadTree(Long64_t entry)
 {
     // Set the environment to read one entry

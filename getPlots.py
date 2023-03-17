@@ -6,8 +6,16 @@ ROOT.gStyle.SetOptStat("nemrou");
 ROOT.gStyle.SetPalette(ROOT.kCherry)
 ROOT.TColor.InvertPalette()
 
+directory = "./eos/plots/"
 tag_channel = "_channel_22"
+
     
+def extract_single_plot(d, c1, tag, hname):
+    h = d.Get(hname)
+    h.Draw()
+    output = directory + hname + tag
+    c1.SaveAs(output + ".png")
+
 def make_h2d_plot(fname, tag):
     fin = ROOT.TFile(fname, "R")
     d = fin.GetDirectory("DQMData/Run 1/HGCAL/Run summary/RecHits", True)
@@ -40,7 +48,7 @@ def make_h2d_plot(fname, tag):
     p2d.SetLineWidth(2)
     p2d.Draw("p,same")
     
-    output = "./eos/h2d_adc" + tag_channel + tag
+    output = directory + "h2d_adc" + tag_channel + tag
     c1.SaveAs(output + ".png")
     c1.SaveAs(output + ".pdf")
 
@@ -49,11 +57,18 @@ def make_h2d_plot(fname, tag):
     #--------------------------------------------------
     h2d_trig = d.Get("h2d_adc_trigtime" + tag_channel)
     h2d_trig.Draw("colz")
-    output = "./eos/h2d_adc_trigtime" + tag_channel + tag
+    output = directory + "h2d_adc_trigtime" + tag_channel + tag
     c1.SaveAs(output + ".png")
     c1.SaveAs(output + ".pdf")
 
+    #--------------------------------------------------
+    # summary plots
+    #--------------------------------------------------
+    extract_single_plot(d, c1, tag, "p_adc")
+    extract_single_plot(d, c1, tag, "p_correlation")
+    extract_single_plot(d, c1, tag, "p_slope")
+    extract_single_plot(d, c1, tag, "p_intercept")
 
 if __name__ == "__main__":
     make_h2d_plot("./eos/DQM_V0001_TEST_R000000001.root", "")
-    make_h2d_plot("./eos/DQM_V0001_CMTEST_R000000001.root", "_cm_subtracted")
+    #make_h2d_plot("./eos/DQM_V0001_CMTEST_R000000001.root", "_cm_subtracted")

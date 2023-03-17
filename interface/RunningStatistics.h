@@ -26,6 +26,7 @@ class RunningStatistics {
         double get_correlation();
         double get_slope();
         double get_intercept();
+        double get_mean_adc()    { return current.mean_y;      }
 
     private:
         statistics current;
