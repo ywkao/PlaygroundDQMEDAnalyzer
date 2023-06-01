@@ -1,16 +1,20 @@
 # PlaygroundDQMEDAnalyzer
 
 ```
-# Need to manually create a directory (or softlink) for output files
-$ mkdir ./eos
+# Developing on top of hgcal-condformat-13_2_X branch
+cmsrel CMSSW_13_2_X_2023-05-23-2300
+cd CMSSW_13_2_X_2023-05-23-2300/src/
+cmsenv
+git cms-init
+git cms-checkout-topic CMS-HGCAL:hgcal-condformat-13_2_X
+cd ./CalibCalorimetry
 
-# Setup environment and compile
-$ cmsenv
-$ time scram b -j10
-
-# Execution
-$ time cmsRun python/ExampleConfig_cfg.py
-
-# Make plots from DQM_V0001_*.root
-$ ./getPlots.py
+# Import this module
+git clone -b eleId git@github.com:ywkao/PlaygroundDQMEDAnalyzer.git
+cd PlaygroundEDProducer/
+mkdir eos
+time scram b -j10
+time cmsRun python/ExampleConfig_cfg.py
 ```
+
+Reference: https://cms-sw.github.io/tutorial-collaborating-with-peers.html

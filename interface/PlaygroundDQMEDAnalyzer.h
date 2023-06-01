@@ -10,6 +10,7 @@
 
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 #include "DQMServices/Core/interface/MonitorElement.h"
+#include "DataFormats/HGCalDigi/interface/HGCalElectronicsId.h"
 
 #include <TBranch.h>
 #include <TChain.h>
@@ -17,9 +18,9 @@
 #include <TString.h>
 #include <TTree.h>
 
-#include "Validation/PlaygroundDQMEDAnalyzer/interface/hgcalhit.h" // define DetectorId
-#include "Validation/PlaygroundDQMEDAnalyzer/interface/RunningCollection.h"
-#include "Validation/PlaygroundDQMEDAnalyzer/interface/LoadCalibrationParameters.h"
+#include "CalibCalorimetry/PlaygroundDQMEDAnalyzer/interface/hgcalhit.h" // define DetectorId
+#include "CalibCalorimetry/PlaygroundDQMEDAnalyzer/interface/RunningCollection.h"
+#include "CalibCalorimetry/PlaygroundDQMEDAnalyzer/interface/LoadCalibrationParameters.h"
 
 class PlaygroundDQMEDAnalyzer : public DQMEDAnalyzer {
 public:

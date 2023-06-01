@@ -1,4 +1,4 @@
-#include "Validation/PlaygroundDQMEDAnalyzer/interface/PlaygroundDQMEDAnalyzer.h"
+#include "CalibCalorimetry/PlaygroundDQMEDAnalyzer/interface/PlaygroundDQMEDAnalyzer.h"
 
 PlaygroundDQMEDAnalyzer::PlaygroundDQMEDAnalyzer(const edm::ParameterSet& iConfig)
     : folder_(iConfig.getParameter<std::string>("folder")),
@@ -168,17 +168,22 @@ void PlaygroundDQMEDAnalyzer::bookHistograms(DQMStore::IBooker& ibook, edm::Run 
 
 // ------------ auxilliary methods  ------------
 void PlaygroundDQMEDAnalyzer::export_calibration_parameters() {
-    TString csv_file_name = "./meta_conditions/output_DQMEDAnalyzer_calibration_parameters" + tag_calibration + ".csv";
+    TString csv_file_name = "./meta_conditions/output_DQMEDAnalyzer_calibration_parameters" + tag_calibration + "_" + myTag + "Data.csv";
     std::ofstream myfile(csv_file_name.Data());
-    myfile << "#------------------------------------------------------------\n";
-    myfile << "# info: " << myTag.Data() << "\n";
-    myfile << "# columns: channel, pedestal, slope, intercept, correlation\n";
-    myfile << "#------------------------------------------------------------\n";
+    //myfile << "#------------------------------------------------------------\n";
+    //myfile << "# info: " << myTag.Data() << "\n";
+    //myfile << "# columns: channel, pedestal, slope, intercept, correlation\n";
+    //myfile << "#------------------------------------------------------------\n";
+    myfile << "Channel Pedestal CM_slope CM_offset kappa_BXm1\n";
 
     std::vector<RunningStatistics> mRs = myRunStatCollection.get_vector_running_statistics();
 
-    for(int i=0; i<234; ++i) {
-        myfile << Form("%d,%.2f,%.2f,%.2f,%.2f\n", i, mRs[i].get_mean_adc(), mRs[i].get_slope(), mRs[i].get_intercept(), mRs[i].get_correlation());
+    for(int channelId=0; channelId<234; ++channelId) {
+        double kappa_BXm1 = 0.000;
+        bool isCM = ( channelId%39==37 || channelId%39==38 );
+        RunningStatistics rs = mRs[channelId];
+        HGCalElectronicsId id (isCM, 0, 0, 0, int(channelId/39), channelId%39);
+        myfile << Form("%d %f %f %f %f\n", id.raw(), rs.get_mean_adc(), rs.get_slope(), rs.get_intercept(), kappa_BXm1);
     }
 
     myfile.close();
