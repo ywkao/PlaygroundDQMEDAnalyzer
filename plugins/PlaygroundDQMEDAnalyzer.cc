@@ -250,9 +250,9 @@ void PlaygroundDQMEDAnalyzer::fill_histograms()
 
 void PlaygroundDQMEDAnalyzer::fill_profiles(int globalChannelId_, double adc_double_)
 {
-    myRunStatCollection.add_entry(globalChannelId_, adc_double, adc_channel_CM);
+    myRunStatCollection.add_entry(globalChannelId_, adc_double_, adc_channel_CM);
 
-    p_adc      -> Fill(globalChannelId_ , adc_double);
+    p_adc      -> Fill(globalChannelId_ , adc_double_);
     p_adcm     -> Fill(globalChannelId_ , adcm      );
     p_tot      -> Fill(globalChannelId_ , tot       );
     p_toa      -> Fill(globalChannelId_ , toa       );
