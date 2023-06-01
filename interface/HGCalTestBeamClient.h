@@ -10,6 +10,7 @@
 
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 #include "DQMServices/Core/interface/MonitorElement.h"
+#include "DataFormats/HGCalDigi/interface/HGCalElectronicsId.h"
 
 #include <TBranch.h>
 #include <TChain.h>
@@ -267,21 +268,20 @@ void HGCalTestBeamClient::bookHistograms(DQMStore::IBooker& ibook, edm::Run cons
 void HGCalTestBeamClient::export_calibration_parameters() {
     TString csv_file_name = "./meta_conditions/output_DQMEDAnalyzer_calibration_parameters" + tag_calibration + ".csv";
     std::ofstream myfile(csv_file_name.Data());
-    myfile << "#------------------------------------------------------------\n";
-    myfile << "# info: " << myTag.Data() << "\n";
-    myfile << "# columns: channel, pedestal, slope, intercept, correlation\n";
-    myfile << "#------------------------------------------------------------\n";
+    //myfile << "#------------------------------------------------------------\n";
+    //myfile << "# info: " << myTag.Data() << "\n";
+    //myfile << "# columns: channel, pedestal, slope, intercept, correlation\n";
+    //myfile << "#------------------------------------------------------------\n";
+    myfile << "Channel Pedestal CM_slope CM_offset kappa_BXm1\n";
 
     std::vector<RunningStatistics> mRs = myRunStatCollection.get_vector_running_statistics();
 
-    for(int i=0; i<234; ++i) {
-        myfile << Form("%d,%.2f,%.2f,%.2f,%.2f\n", i, mRs[i].get_mean_adc(), mRs[i].get_slope(), mRs[i].get_intercept(), mRs[i].get_correlation());
-
-        // the following method does not work because of L161 in DQMServices/Core/interface/MonitorElement.h
-        if(i<hex_counter) {
-            // double content = p_adc->getBinContent(i+1);
-            // hex_pedestal->setBinContent(i+1, mRs[i].get_mean_adc());
-        }
+    for(int channelId=0; channelId<234; ++channelId) {
+        double kappa_BXm1 = 0.000;
+        bool isCM = ( channelId%39==37 || channelId%39==38 );
+        RunningStatistics rs = mRs[channelId];
+        HGCalElectronicsId id (isCM, 0, 0, 0, int(channelId/39), channelId%39);
+        myfile << Form("%d %f %f %f %f\n", id.raw(), rs.get_mean_adc(), rs.get_slope(), rs.get_intercept(), kappa_BXm1);
     }
 
     myfile.close();
