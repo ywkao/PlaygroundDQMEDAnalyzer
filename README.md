@@ -1,12 +1,16 @@
 # PlaygroundDQMEDAnalyzer
 
 ```
-# Download
-git clone git@github.com:ywkao/PlaygroundDQMEDAnalyzer.git
+# Need to manually create a directory (or softlink) for output files
+$ mkdir ./eos
 
-# Replace dummy input file
-vim python/ExampleConfig_cfg.py
+# Setup environment and compile
+$ cmsenv
+$ time scram b -j10
 
-# Execute after cmsenv
-time scram b -j10 && time cmsRun python/ExampleConfig_cfg.py
+# Execution
+$ time cmsRun python/ExampleConfig_cfg.py
+
+# Make plots from DQM_V0001_*.root
+$ ./getPlots.py
 ```

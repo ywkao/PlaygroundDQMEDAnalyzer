@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 import ROOT
 ROOT.gROOT.SetBatch(True)
-
 ROOT.gStyle.SetOptStat("nemrou");
 ROOT.gStyle.SetPalette(ROOT.kCherry)
 ROOT.TColor.InvertPalette()
 
-directory = "./eos/plots/"
+import os
+import datetime
+directory='./eos/plots_{}/'.format(datetime.datetime.now().strftime('%Y%b%d'))
+os.system('mkdir -p {}'.format(directory)) 
 tag_channel = "_channel_22"
 
     
