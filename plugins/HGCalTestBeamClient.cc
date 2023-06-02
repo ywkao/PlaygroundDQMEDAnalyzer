@@ -45,13 +45,17 @@ void HGCalTestBeamClient::analyze(const edm::Event& iEvent, const edm::EventSetu
         bool is_bad_channel = globalChannelId==146 || globalChannelId==171;
         if(is_bad_channel) continue;
 
+        // need eleId for reading calibration parameters
+        bool is_cm_channel = (globalChannelId % 39 == 37 || globalChannelId % 39 == 38);
+        HGCalElectronicsId id (is_cm_channel, 0, 0, 0, int(globalChannelId/39), globalChannelId%39);
+        int eleId = id.raw();
         // convert adc to double
         adc_double = (double) adc;
         adcm_double = (double) adcm;
 
         // perform pedestal subtraction
         if(flag_perform_pedestal_subtraction) {
-            double pedestal = calib_loader.map_pedestals[globalChannelId];
+            double pedestal = calib_loader.map_pedestals[eleId];
             adc_double -= pedestal;
         }
 
@@ -71,7 +75,7 @@ void HGCalTestBeamClient::analyze(const edm::Event& iEvent, const edm::EventSetu
         } else if(globalChannelId % 39 == 38) {
             // CM subtraction for channel 37
             if(flag_perform_cm_subtraction) {
-                std::vector<double> parameters = calib_loader.map_cm_parameters[globalChannelId-1];
+                std::vector<double> parameters = calib_loader.map_cm_parameters[eleId-1];
                 double slope = parameters[0];
                 double intercept = parameters[1];
                 double correction = adc_channel_CM*slope + intercept;
@@ -83,7 +87,7 @@ void HGCalTestBeamClient::analyze(const edm::Event& iEvent, const edm::EventSetu
 
         // perform common mode subtraction
         if(flag_perform_cm_subtraction) {
-            std::vector<double> parameters = calib_loader.map_cm_parameters[globalChannelId];
+            std::vector<double> parameters = calib_loader.map_cm_parameters[eleId];
             double slope = parameters[0];
             double intercept = parameters[1];
             double correction = adc_channel_CM*slope + intercept;
