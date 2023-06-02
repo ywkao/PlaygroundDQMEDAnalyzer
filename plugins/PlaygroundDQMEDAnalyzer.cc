@@ -74,17 +74,21 @@ void PlaygroundDQMEDAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
         bool is_bad_channel = globalChannelId==146 || globalChannelId==171;
         if(is_bad_channel) continue;
 
+        // need eleId for reading calibration parameters
+        bool is_cm_channel = (globalChannelId % 39 == 37 || globalChannelId % 39 == 38);
+        HGCalElectronicsId id (is_cm_channel, 0, 0, 0, int(globalChannelId/39), globalChannelId%39);
+        int eleId = id.raw();
+
         // convert adc to double
         adc_double = (double) adc;
 
         // perform pedestal subtraction
         if(flag_perform_pedestal_subtraction) {
-            double pedestal = calib_loader.map_pedestals[globalChannelId];
+            double pedestal = calib_loader.map_pedestals[eleId];
             adc_double -= pedestal;
         }
 
         // handle cm information after pedestal subtraction
-        bool is_cm_channel = (globalChannelId % 39 == 37 || globalChannelId % 39 == 38);
         if(is_cm_channel) {
             // take average of two cm channels in a half
             adc_channel_CM += adc_double / 2.;
@@ -98,7 +102,7 @@ void PlaygroundDQMEDAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
         } else if(globalChannelId % 39 == 38) {
             // CM subtraction for channel 37
             if(flag_perform_cm_subtraction) {
-                std::vector<double> parameters = calib_loader.map_cm_parameters[globalChannelId-1];
+                std::vector<double> parameters = calib_loader.map_cm_parameters[eleId-1];
                 double slope = parameters[0];
                 double intercept = parameters[1];
                 double correction = adc_channel_CM*slope + intercept;
@@ -110,7 +114,7 @@ void PlaygroundDQMEDAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
 
         // perform common mode subtraction
         if(flag_perform_cm_subtraction) {
-            std::vector<double> parameters = calib_loader.map_cm_parameters[globalChannelId];
+            std::vector<double> parameters = calib_loader.map_cm_parameters[eleId];
             double slope = parameters[0];
             double intercept = parameters[1];
             double correction = adc_channel_CM*slope + intercept;
@@ -168,16 +172,12 @@ void PlaygroundDQMEDAnalyzer::bookHistograms(DQMStore::IBooker& ibook, edm::Run 
 
 // ------------ auxilliary methods  ------------
 void PlaygroundDQMEDAnalyzer::export_calibration_parameters() {
-    TString csv_file_name = "./meta_conditions/output_DQMEDAnalyzer_calibration_parameters" + tag_calibration + "_" + myTag + "Data.csv";
+    TString csv_file_name = "./meta_conditions/output_DQMEDAnalyzer_calibration_parameters_" + myTag + "Data" + tag_calibration + ".txt";
     std::ofstream myfile(csv_file_name.Data());
-    //myfile << "#------------------------------------------------------------\n";
-    //myfile << "# info: " << myTag.Data() << "\n";
-    //myfile << "# columns: channel, pedestal, slope, intercept, correlation\n";
-    //myfile << "#------------------------------------------------------------\n";
-    myfile << "Channel Pedestal CM_slope CM_offset kappa_BXm1\n";
 
     std::vector<RunningStatistics> mRs = myRunStatCollection.get_vector_running_statistics();
 
+    myfile << "Channel Pedestal CM_slope CM_offset kappa_BXm1\n";
     for(int channelId=0; channelId<234; ++channelId) {
         double kappa_BXm1 = 0.000;
         bool isCM = ( channelId%39==37 || channelId%39==38 );
@@ -185,7 +185,6 @@ void PlaygroundDQMEDAnalyzer::export_calibration_parameters() {
         HGCalElectronicsId id (isCM, 0, 0, 0, int(channelId/39), channelId%39);
         myfile << Form("%d %f %f %f %f\n", id.raw(), rs.get_mean_adc(), rs.get_slope(), rs.get_intercept(), kappa_BXm1);
     }
-
     myfile.close();
     printf("[INFO] export CM parameters: %s\n", csv_file_name.Data());
 }

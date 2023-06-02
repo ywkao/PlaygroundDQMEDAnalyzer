@@ -40,17 +40,17 @@ void CalibrationParameterLoader::loadParameters() {
             std::size_t found_3rd_index = line.find(",", found_2nd_index+1, 1);
             std::size_t found_4th_index = line.find(",", found_3rd_index+1, 1);
 
-            int channel_id   = std::stoi( line.substr(0,found_1st_index) );
+            int eleId   = std::stoi( line.substr(0,found_1st_index) );
             double pedestal  = std::stod( line.substr(found_1st_index+1, found_2nd_index) );
             double slope     = std::stod( line.substr(found_2nd_index+1, found_3rd_index) );
             double intercept = std::stod( line.substr(found_3rd_index+1, found_4th_index) );
 
             std::vector<double> v = {slope, intercept};
-            map_pedestals[channel_id] = pedestal;
-            map_cm_parameters[channel_id] = v;
+            map_pedestals[eleId] = pedestal;
+            map_cm_parameters[eleId] = v;
 
-            //printf("channel_id = %d, pedestal = %.3f, slope = %.3f, intercept = %6.3f\n",
-            //        channel_id, map_pedestals[channel_id], map_cm_parameters[channel_id][0], map_cm_parameters[channel_id][1] );
+            printf("eleId = %d, pedestal = %.3f, slope = %.3f, intercept = %6.3f\n",
+                    eleId, map_pedestals[eleId], map_cm_parameters[eleId][0], map_cm_parameters[eleId][1] );
         }
         loaded_csv_file.close();
     } else {
