@@ -10,6 +10,7 @@
 
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 #include "DQMServices/Core/interface/MonitorElement.h"
+#include "DataFormats/HGCalDigi/interface/HGCalElectronicsId.h"
 
 #include <TBranch.h>
 #include <TChain.h>
@@ -17,15 +18,9 @@
 #include <TString.h>
 #include <TTree.h>
 
-#include "Validation/PlaygroundDQMEDAnalyzer/interface/hgcalhit.h" // define DetectorId
-#include "Validation/PlaygroundDQMEDAnalyzer/interface/RunningCollection.h"
-#include "Validation/PlaygroundDQMEDAnalyzer/interface/LoadCalibrationParameters.h"
-
-#include <TCollection.h> // for TIter
-#include <TGraph.h>
-#include <TH2Poly.h>
-#include <TKey.h>
-#include <TObject.h>
+#include "CalibCalorimetry/PlaygroundDQMEDAnalyzer/interface/hgcalhit.h" // define DetectorId
+#include "CalibCalorimetry/PlaygroundDQMEDAnalyzer/interface/RunningCollection.h"
+#include "CalibCalorimetry/PlaygroundDQMEDAnalyzer/interface/LoadCalibrationParameters.h"
 
 class PlaygroundDQMEDAnalyzer : public DQMEDAnalyzer {
 public:
@@ -100,14 +95,6 @@ private:
   MonitorElement* p_correlation ;
   MonitorElement* p_slope       ;
   MonitorElement* p_intercept   ;
-
-  //--------------------------------------------------
-  // for hexagonal histograms (developing)
-  //--------------------------------------------------
-  int hex_counter;
-  //TH2Poly *hexagonal_histogram;
-  MonitorElement* hex_channelId;
-  MonitorElement* hex_pedestal;
 
   //--------------------------------------------------
   // for reading ntuple (temporary)
