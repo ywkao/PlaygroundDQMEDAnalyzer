@@ -111,7 +111,7 @@ private:
   MonitorElement* hex_pedestal;
   MonitorElement* hex_adc_minus_adcm;
   MonitorElement* hex_tot_mean;
-  MonitorElement* hex_expected_beam_center;
+  MonitorElement* hex_beam_center;
 
   //--------------------------------------------------
   // for reading ntuple (temporary)

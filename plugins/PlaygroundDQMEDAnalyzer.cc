@@ -7,6 +7,8 @@ PlaygroundDQMEDAnalyzer::PlaygroundDQMEDAnalyzer(const edm::ParameterSet& iConfi
 {
     // load trees from beam data / pedestal run
     TString root_beamRun  = "/eos/cms/store/group/dpg_hgcal/tb_hgcal/2022/sps_oct2022/pion_beam_150_320fC/beam_run/run_20221007_191926/beam_run0.root";
+    //TString root_beamRun  = "/eos/cms/store/group/dpg_hgcal/tb_hgcal/2022/sps_oct2022/electron_beam_80_160fC/beam_run/run_20221011_192939/beam_run0.root";
+    //TString root_beamRun  = "/eos/cms/store/group/dpg_hgcal/tb_hgcal/2022/sps_oct2022/pre-beam/ped_calibration_160fC/injection_scan/run_20221006_115701/injection_scan0.root";
     TString root_pedestal = "/eos/cms/store/group/dpg_hgcal/tb_hgcal/2022/sps_oct2022/pedestals/pedestal_320fC/pedestal_run/run_20221008_192720/pedestal_run0.root";
     TString input = (myTag=="beam") ? root_beamRun : root_pedestal;
     printf("[INFO] Input rootfile: %s\n", input.Data());
@@ -124,25 +126,39 @@ void PlaygroundDQMEDAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
         if(globalChannelId==22) fill_histograms();
     } // end of ntpule hit loop
 
+    int max_bin_diff_adc = -1;
+    double max_diff_adc = -1.;
     // summary for running statistics
     std::vector<RunningStatistics> mRs = myRunStatCollection.get_vector_running_statistics();
     for(int channelId=0; channelId<234; ++channelId) {
+        bool is_cm_channel = (channelId % 39 == 37 || channelId % 39 == 38);
+
         // problems with setBinContent(): 1. the plots look empty 2. the entries not as expected
         p_correlation -> setBinContent( channelId+1, mRs[channelId].get_correlation() );
         p_slope       -> setBinContent( channelId+1, mRs[channelId].get_slope()       );
         p_intercept   -> setBinContent( channelId+1, mRs[channelId].get_intercept()   );
-        printf("[DEBUG] channel %3d, corr = %.2f, slope = %.2f, intercept = %.2f\n",
-                channelId,
-                mRs[channelId].get_correlation(),
-                mRs[channelId].get_slope(),
-                mRs[channelId].get_intercept()
-              );
+
+        //printf("[DEBUG] channel = %3d, adc #minus adc_{-1} = %.2f\n", channelId, p_adc_diff->getBinContent(channelId+1));
+
+        //printf("[DEBUG] channel %3d, corr = %.2f, slope = %.2f, intercept = %.2f\n",
+        //        channelId,
+        //        mRs[channelId].get_correlation(),
+        //        mRs[channelId].get_slope(),
+        //        mRs[channelId].get_intercept()
+        //      );
 
         if(channelId<hex_counter) {
+            double mean_adc_diff = p_adc_diff->getBinContent(channelId+1);
+            double mean_tot = p_tot->getBinContent(channelId+1);
+
             hex_pedestal->setBinContent(channelId+1, mRs[channelId].get_mean_adc());
-            hex_adc_minus_adcm       -> setBinContent(channelId+1, 0.);
-            hex_tot_mean             -> setBinContent(channelId+1, 0.);
-            hex_expected_beam_center -> setBinContent(channelId+1, 0.);
+            hex_adc_minus_adcm -> setBinContent(channelId+1, mean_adc_diff);
+            hex_tot_mean       -> setBinContent(channelId+1, mean_tot);
+
+            if(!is_cm_channel && mean_adc_diff>max_diff_adc) {
+                max_bin_diff_adc = channelId;
+                max_diff_adc = mean_adc_diff;
+            }
         }
             
         //// TODO: how to set uncertainty?
@@ -150,6 +166,8 @@ void PlaygroundDQMEDAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
         //p_slope       -> Fill( channelId+1, mRs[channelId].get_slope()       );
         //p_intercept   -> Fill( channelId+1, mRs[channelId].get_intercept()   );
     }
+
+    hex_beam_center -> setBinContent(max_bin_diff_adc+1, max_diff_adc);
 }
 
 void PlaygroundDQMEDAnalyzer::bookHistograms(DQMStore::IBooker& ibook, edm::Run const& run, edm::EventSetup const& iSetup) {
@@ -200,11 +218,11 @@ void PlaygroundDQMEDAnalyzer::bookHistograms(DQMStore::IBooker& ibook, edm::Run 
 
     ibook.setCurrentFolder("HGCAL/Maps");
     TString xytitle = ";x (cm);y (cm)";
-    hex_padId                = ibook.book2DPoly("hex_padId"          , "hex_padId"          + xytitle , -22 , 22 , -24 , 20);
-    hex_pedestal             = ibook.book2DPoly("hex_pedestal"       , "hex_pedestal"       + xytitle , -22 , 22 , -24 , 20);
-    hex_adc_minus_adcm       = ibook.book2DPoly("hex_adc_minus_adcm" , "hex_adc_minus_adcm" + xytitle , -22 , 22 , -24 , 20);
-    hex_tot_mean             = ibook.book2DPoly("hex_tot_mean"       , "hex_tot_mean"       + xytitle , -22 , 22 , -24 , 20);
-    hex_expected_beam_center = ibook.book2DPoly("hex_totMean"        , "hex_totMean"        + xytitle , -22 , 22 , -24 , 20);
+    hex_padId          = ibook.book2DPoly("hex_padId"          , "hex_padId"          + xytitle     , -22 , 22 , -24 , 20);
+    hex_pedestal       = ibook.book2DPoly("hex_pedestal"       , "hex_pedestal"       + xytitle     , -22 , 22 , -24 , 20);
+    hex_adc_minus_adcm = ibook.book2DPoly("hex_adc_minus_adcm" , "hex_adc_minus_adcm" + xytitle     , -22 , 22 , -24 , 20);
+    hex_tot_mean       = ibook.book2DPoly("hex_tot_mean"       , "hex_tot_mean"       + xytitle     , -22 , 22 , -24 , 20);
+    hex_beam_center    = ibook.book2DPoly("hex_beam_center"    , "hex_beam_center"    + xytitle , -22 , 22 , -24 , 20);
 
     // CAVEAT: the current bin number represents padId, instead of channelId
     hex_counter = 0;
@@ -215,11 +233,11 @@ void PlaygroundDQMEDAnalyzer::bookHistograms(DQMStore::IBooker& ibook, edm::Run 
         TObject *obj = key->ReadObj();
         if(obj->InheritsFrom("TGraph")) {
             gr = (TGraph*) obj;
-            hex_padId                -> addBin(gr);
-            hex_pedestal             -> addBin(gr);
-            hex_adc_minus_adcm       -> addBin(gr);
-            hex_tot_mean             -> addBin(gr);
-            hex_expected_beam_center -> addBin(gr);
+            hex_padId          -> addBin(gr);
+            hex_pedestal       -> addBin(gr);
+            hex_adc_minus_adcm -> addBin(gr);
+            hex_tot_mean       -> addBin(gr);
+            hex_beam_center    -> addBin(gr);
             hex_counter+=1;
         }
     }
