@@ -235,10 +235,10 @@ void PlaygroundDQMEDAnalyzer::bookHistograms(DQMStore::IBooker& ibook, edm::Run 
 
     ibook.setCurrentFolder("HGCAL/Maps");
     TString xytitle = ";x (cm);y (cm)";
-    hex_padId          = ibook.book2DPoly("hex_padId"          , "hex_padId"          + xytitle     , -22 , 22 , -24 , 20);
-    hex_pedestal       = ibook.book2DPoly("hex_pedestal"       , "hex_pedestal"       + xytitle     , -22 , 22 , -24 , 20);
-    hex_adc_minus_adcm = ibook.book2DPoly("hex_adc_minus_adcm" , "hex_adc_minus_adcm" + xytitle     , -22 , 22 , -24 , 20);
-    hex_tot_mean       = ibook.book2DPoly("hex_tot_mean"       , "hex_tot_mean"       + xytitle     , -22 , 22 , -24 , 20);
+    hex_padId          = ibook.book2DPoly("hex_padId"          , "hex_padId"          + xytitle , -22 , 22 , -24 , 20);
+    hex_pedestal       = ibook.book2DPoly("hex_pedestal"       , "hex_pedestal"       + xytitle , -22 , 22 , -24 , 20);
+    hex_adc_minus_adcm = ibook.book2DPoly("hex_adc_minus_adcm" , "hex_adc_minus_adcm" + xytitle , -22 , 22 , -24 , 20);
+    hex_tot_mean       = ibook.book2DPoly("hex_tot_mean"       , "hex_tot_mean"       + xytitle , -22 , 22 , -24 , 20);
     hex_beam_center    = ibook.book2DPoly("hex_beam_center"    , "hex_beam_center"    + xytitle , -22 , 22 , -24 , 20);
 
     // CAVEAT: the current bin number represents padId, instead of channelId

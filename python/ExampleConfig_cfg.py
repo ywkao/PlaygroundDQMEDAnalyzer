@@ -27,7 +27,7 @@ process.DQMStore = cms.Service("DQMStore")
 process.load("DQMServices.FileIO.DQMFileSaverOnline_cfi")
 process.dqmSaver.tag = 'HGCAL'
 process.dqmSaver.path = './eos/'
-process.dqmSaver.runNumber = 123471
+process.dqmSaver.runNumber = 123472
 
 process.p1 = cms.Path(process.playgrounddqmedanalyzer + process.dqmSaver)
 
