@@ -1,9 +1,3 @@
-//#include "CalibCalorimetry/PlaygroundDQMEDAnalyzer/interface/PlaygroundDQMEDAnalyzer.h"
-#include <string>
-#include <fstream>
-#include <iostream>
-
-// user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -16,20 +10,20 @@
 #include "DataFormats/HGCalDigi/interface/HGCROCChannelDataFrame.h"
 #include "DataFormats/HGCalDigi/interface/HGCalDigiCollections.h"
 
-#include <TBranch.h>
-#include <TChain.h>
-#include <TFile.h>
 #include <TString.h>
-#include <TTree.h>
+
+#include <string>
+#include <fstream>
+#include <iostream>
 
 //#include "DQM/HGCal/interface/hgcalhit.h" // define DetectorId
 #include "DQM/HGCal/interface/RunningCollection.h"
 #include "DQM/HGCal/interface/LoadCalibrationParameters.h"
 
-class PlaygroundDQMEDAnalyzer : public DQMEDAnalyzer {
+class HGCalDigisClient : public DQMEDAnalyzer {
 public:
-  explicit PlaygroundDQMEDAnalyzer(const edm::ParameterSet&);
-  ~PlaygroundDQMEDAnalyzer() override;
+  explicit HGCalDigisClient(const edm::ParameterSet&);
+  ~HGCalDigisClient() override;
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -59,18 +53,18 @@ private:
 };
 
 
-PlaygroundDQMEDAnalyzer::PlaygroundDQMEDAnalyzer(const edm::ParameterSet& iConfig)
+HGCalDigisClient::HGCalDigisClient(const edm::ParameterSet& iConfig)
     : elecDigisToken_(consumes<HGCalElecDigiCollection>(iConfig.getParameter<edm::InputTag>("Digis")))
 {}
 
-PlaygroundDQMEDAnalyzer::~PlaygroundDQMEDAnalyzer() {
+HGCalDigisClient::~HGCalDigisClient() {
     // TODO: is the destructor a proper place to export calibration parameters?
     // export_calibration_parameters();
     printf("[INFO] This is the end of the job\n");
 }
 
 // ------------ method called for each event  ------------
-void PlaygroundDQMEDAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+void HGCalDigisClient::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
     using namespace edm;
 
     const auto& elecDigis = iEvent.get(elecDigisToken_);
@@ -94,17 +88,17 @@ void PlaygroundDQMEDAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
     }
 }
 
-void PlaygroundDQMEDAnalyzer::bookHistograms(DQMStore::IBooker& ibook, edm::Run const& run, edm::EventSetup const& iSetup) {
+void HGCalDigisClient::bookHistograms(DQMStore::IBooker& ibook, edm::Run const& run, edm::EventSetup const& iSetup) {
     ibook.setCurrentFolder("HGCAL/Digis");
     p_adc_minus_adcm1   = ibook.bookProfile("p_adc_minus_adcm1"   , ";channel;ADC #minux ADC_{-1}", 234 , 0 , 234 , 175 , -25 , 150 );
 
     ibook.setCurrentFolder("HGCAL/Maps");
-    hex_adc_minus_adcm1 = ibook.book2DPoly ("hex_adc_minus_adcm1" , "hex_adc_minus_adcm1;x (arb. unit); y (arb. unit)" , -32 , 32 , -32 , 32);
-    hex_tot_median      = ibook.book2DPoly ("hex_tot_median"      , "hex_tot_median;x (arb. unit); y (arb. unit)"      , -32 , 32 , -32 , 32);
-    hex_beam_center     = ibook.book2DPoly ("hex_beam_center"     , "hex_beam_center;x (arb. unit); y (arb. unit)"     , -32 , 32 , -32 , 32);
+    hex_adc_minus_adcm1 = ibook.book2DPoly ("hex_adc_minus_adcm1" , "hex_adc_minus_adcm1;x (arb. unit); y (arb. unit)" , -22 , 22 , -24 , 20);
+    hex_tot_median      = ibook.book2DPoly ("hex_tot_median"      , "hex_tot_median;x (arb. unit); y (arb. unit)"      , -22 , 22 , -24 , 20);
+    hex_beam_center     = ibook.book2DPoly ("hex_beam_center"     , "hex_beam_center;x (arb. unit); y (arb. unit)"     , -22 , 22 , -24 , 20);
 }
 
-void PlaygroundDQMEDAnalyzer::export_calibration_parameters() {
+void HGCalDigisClient::export_calibration_parameters() {
     //TString csv_file_name = "./meta_conditions/output_DQMEDAnalyzer_calibration_parameters_" + myTag + "Data" + tag_calibration + ".txt";
     TString csv_file_name = "./meta_conditions/output_DQMEDAnalyzer_calibration_parameters.txt";
     std::ofstream myfile(csv_file_name.Data());
@@ -115,6 +109,7 @@ void PlaygroundDQMEDAnalyzer::export_calibration_parameters() {
     for(int channelId=0; channelId<234; ++channelId) {
         double kappa_BXm1 = 0.000;
         RunningStatistics rs = mRs[channelId];
+        // Note: need CM info
         // bool isCM = ( channelId%39==37 || channelId%39==38 );
         // HGCalElectronicsId id (isCM, 0, 0, 0, int(channelId/39), channelId%39);
         HGCalElectronicsId id (0, 0, 0, int(channelId/39), channelId%39);
@@ -125,10 +120,10 @@ void PlaygroundDQMEDAnalyzer::export_calibration_parameters() {
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
-void PlaygroundDQMEDAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+void HGCalDigisClient::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
     edm::ParameterSetDescription desc;
     desc.add<edm::InputTag>("Digis",edm::InputTag("hgcalDigis","DIGI","TEST"));
 }
 
 // define this as a plug-in
-DEFINE_FWK_MODULE(PlaygroundDQMEDAnalyzer);
+DEFINE_FWK_MODULE(HGCalDigisClient);
