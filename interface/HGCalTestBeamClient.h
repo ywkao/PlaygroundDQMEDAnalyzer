@@ -266,21 +266,33 @@ void HGCalTestBeamClient::bookHistograms(DQMStore::IBooker& ibook, edm::Run cons
 
 // ------------ auxilliary methods  ------------
 void HGCalTestBeamClient::export_calibration_parameters() {
-    TString csv_file_name = "./meta_conditions/output_DQMEDAnalyzer_calibration_parameters_" + myTag + "Data" + tag_calibration + ".txt";
-    std::ofstream myfile(csv_file_name.Data());
-    std::vector<RunningStatistics> mRs = myRunStatCollection.get_vector_running_statistics();
+    // (0, 0) -> produce a table of derived parameters
+    // (1, 0) -> produce a table of applied pedestal & derived CM parameters
+    // (1, 1) -> do not produce a table
 
-    myfile << "Channel Pedestal CM_slope CM_offset kappa_BXm1\n";
-    for(int channelId=0; channelId<234; ++channelId) {
-        double kappa_BXm1 = 0.000;
-        bool isCM = ( channelId%39==37 || channelId%39==38 );
-        RunningStatistics rs = mRs[channelId];
-        //HGCalElectronicsId id (isCM, 0, 0, 0, int(channelId/39), channelId%39);
-        HGCalElectronicsId id (0, 0, 0, int(channelId/39), channelId%39);
-        myfile << Form("%d %f %f %f %f\n", id.raw(), rs.get_mean_adc(), rs.get_slope(), rs.get_intercept(), kappa_BXm1);
+    if(calibration_flags[0]==1 && calibration_flags[1]==1) {
+        printf("[INFO] both pedestal subtraction and CM subtraction are applied. No need to export parameters.\n");
+    } else {
+        TString csv_file_name = "./meta_conditions/output_DQMEDAnalyzer_calibration_parameters_" + myTag + "Data" + tag_calibration + ".txt";
+        std::ofstream myfile(csv_file_name.Data());
+        myfile << "Channel Pedestal CM_slope CM_offset kappa_BXm1\n";
+
+        std::vector<RunningStatistics> mRs = myRunStatCollection.get_vector_running_statistics();
+        for(int channelId=0; channelId<234; ++channelId) {
+            double kappa_BXm1 = 0.000;
+            bool isCM = ( channelId%39==37 || channelId%39==38 );
+            RunningStatistics rs = mRs[channelId];
+            //HGCalElectronicsId id (isCM, 0, 0, 0, int(channelId/39), channelId%39);
+            HGCalElectronicsId id (0, 0, 0, int(channelId/39), channelId%39);
+
+            int eleId = id.raw();
+            double pedestal = (calibration_flags[0]==1) ? calib_loader.map_pedestals[eleId] : rs.get_mean_adc();
+            myfile << Form("%d %f %f %f %f\n", id.raw(), pedestal, rs.get_slope(), rs.get_intercept(), kappa_BXm1);
+        }
+
+        myfile.close();
+        printf("[INFO] export CM parameters: %s\n", csv_file_name.Data());
     }
-    myfile.close();
-    printf("[INFO] export CM parameters: %s\n", csv_file_name.Data());
 }
 
 Long64_t HGCalTestBeamClient::LoadTree(Long64_t entry)
