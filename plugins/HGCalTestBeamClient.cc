@@ -47,7 +47,8 @@ void HGCalTestBeamClient::analyze(const edm::Event& iEvent, const edm::EventSetu
 
         // need eleId for reading calibration parameters
         bool is_cm_channel = (globalChannelId % 39 == 37 || globalChannelId % 39 == 38);
-        HGCalElectronicsId id (is_cm_channel, 0, 0, 0, int(globalChannelId/39), globalChannelId%39);
+        //HGCalElectronicsId id (is_cm_channel, 0, 0, 0, int(globalChannelId/39), globalChannelId%39);
+        HGCalElectronicsId id (0, 0, 0, int(globalChannelId/39), globalChannelId%39);
         int eleId = id.raw();
         // convert adc to double
         adc_double = (double) adc;
@@ -60,7 +61,6 @@ void HGCalTestBeamClient::analyze(const edm::Event& iEvent, const edm::EventSetu
         }
 
         // handle cm information after pedestal subtraction
-        bool is_cm_channel = (globalChannelId % 39 == 37 || globalChannelId % 39 == 38);
         if(is_cm_channel) {
             // take average of two cm channels in a half
             adc_channel_CM += adc_double / 2.;

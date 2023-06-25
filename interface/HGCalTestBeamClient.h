@@ -266,7 +266,7 @@ void HGCalTestBeamClient::bookHistograms(DQMStore::IBooker& ibook, edm::Run cons
 
 // ------------ auxilliary methods  ------------
 void HGCalTestBeamClient::export_calibration_parameters() {
-    TString csv_file_name = "./meta_conditions/output_DQMEDAnalyzer_calibration_parameters" + tag_calibration + ".csv";
+    TString csv_file_name = "./meta_conditions/output_DQMEDAnalyzer_calibration_parameters_" + myTag + "Data" + tag_calibration + ".txt";
     std::ofstream myfile(csv_file_name.Data());
     std::vector<RunningStatistics> mRs = myRunStatCollection.get_vector_running_statistics();
 
@@ -275,7 +275,8 @@ void HGCalTestBeamClient::export_calibration_parameters() {
         double kappa_BXm1 = 0.000;
         bool isCM = ( channelId%39==37 || channelId%39==38 );
         RunningStatistics rs = mRs[channelId];
-        HGCalElectronicsId id (isCM, 0, 0, 0, int(channelId/39), channelId%39);
+        //HGCalElectronicsId id (isCM, 0, 0, 0, int(channelId/39), channelId%39);
+        HGCalElectronicsId id (0, 0, 0, int(channelId/39), channelId%39);
         myfile << Form("%d %f %f %f %f\n", id.raw(), rs.get_mean_adc(), rs.get_slope(), rs.get_intercept(), kappa_BXm1);
     }
     myfile.close();
