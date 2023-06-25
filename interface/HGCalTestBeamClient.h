@@ -17,9 +17,9 @@
 #include <TString.h>
 #include <TTree.h>
 
-#include "Validation/PlaygroundDQMEDAnalyzer/interface/hgcalhit.h" // define DetectorId
-#include "Validation/PlaygroundDQMEDAnalyzer/interface/RunningCollection.h"
-#include "Validation/PlaygroundDQMEDAnalyzer/interface/LoadCalibrationParameters.h"
+#include "DQM/HGCal/interface/hgcalhit.h" // define DetectorId
+#include "DQM/HGCal/interface/RunningCollection.h"
+#include "DQM/HGCal/interface/LoadCalibrationParameters.h"
 
 #include <TCollection.h> // for TIter
 #include <TGraph.h>
@@ -27,10 +27,10 @@
 #include <TKey.h>
 #include <TObject.h>
 
-class PlaygroundDQMEDAnalyzer : public DQMEDAnalyzer {
+class HGCalTestBeamClient : public DQMEDAnalyzer {
 public:
-  explicit PlaygroundDQMEDAnalyzer(const edm::ParameterSet&);
-  ~PlaygroundDQMEDAnalyzer() override;
+  explicit HGCalTestBeamClient(const edm::ParameterSet&);
+  ~HGCalTestBeamClient() override;
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -159,7 +159,7 @@ private:
   TBranch        *b_orbitcounter;
 };
 
-PlaygroundDQMEDAnalyzer::PlaygroundDQMEDAnalyzer(const edm::ParameterSet& iConfig)
+HGCalTestBeamClient::HGCalTestBeamClient(const edm::ParameterSet& iConfig)
     : folder_(iConfig.getParameter<std::string>("folder")),
     myTag(iConfig.getParameter<std::string>( "DataType" )),
     calibration_flags(iConfig.getParameter<std::vector<int> >( "CalibrationFlags" )),
@@ -181,13 +181,13 @@ PlaygroundDQMEDAnalyzer::PlaygroundDQMEDAnalyzer(const edm::ParameterSet& iConfi
     calib_loader.loadParameters();
 }
 
-PlaygroundDQMEDAnalyzer::~PlaygroundDQMEDAnalyzer() {
+HGCalTestBeamClient::~HGCalTestBeamClient() {
     // TODO: is the destructor a proper place to export calibration parameters?
     export_calibration_parameters();
     printf("[INFO] This is the end of the job\n");
 }
 
-void PlaygroundDQMEDAnalyzer::bookHistograms(DQMStore::IBooker& ibook, edm::Run const& run, edm::EventSetup const& iSetup) {
+void HGCalTestBeamClient::bookHistograms(DQMStore::IBooker& ibook, edm::Run const& run, edm::EventSetup const& iSetup) {
     //--------------------------------------------------
     // Examples
     //--------------------------------------------------
@@ -264,7 +264,7 @@ void PlaygroundDQMEDAnalyzer::bookHistograms(DQMStore::IBooker& ibook, edm::Run 
 }
 
 // ------------ auxilliary methods  ------------
-void PlaygroundDQMEDAnalyzer::export_calibration_parameters() {
+void HGCalTestBeamClient::export_calibration_parameters() {
     TString csv_file_name = "./meta_conditions/output_DQMEDAnalyzer_calibration_parameters" + tag_calibration + ".csv";
     std::ofstream myfile(csv_file_name.Data());
     myfile << "#------------------------------------------------------------\n";
@@ -288,7 +288,7 @@ void PlaygroundDQMEDAnalyzer::export_calibration_parameters() {
     printf("[INFO] export CM parameters: %s\n", csv_file_name.Data());
 }
 
-Long64_t PlaygroundDQMEDAnalyzer::LoadTree(Long64_t entry)
+Long64_t HGCalTestBeamClient::LoadTree(Long64_t entry)
 {
     // Set the environment to read one entry
     if (!fChain) return -5;
@@ -300,7 +300,7 @@ Long64_t PlaygroundDQMEDAnalyzer::LoadTree(Long64_t entry)
     return centry;
 }
 
-void PlaygroundDQMEDAnalyzer::Init(TTree *tree)
+void HGCalTestBeamClient::Init(TTree *tree)
 {
     if (tree == 0) printf("[ERROR] something goes wrong with input tree\n");
 
@@ -332,11 +332,11 @@ void PlaygroundDQMEDAnalyzer::Init(TTree *tree)
     tag_channelId = "_channel_22";
 }
 
-void PlaygroundDQMEDAnalyzer::enable_pedestal_subtraction() { flag_perform_pedestal_subtraction = true; tag_calibration = "_ped_subtracted"; }
+void HGCalTestBeamClient::enable_pedestal_subtraction() { flag_perform_pedestal_subtraction = true; tag_calibration = "_ped_subtracted"; }
 
-void PlaygroundDQMEDAnalyzer::enable_cm_subtraction() { flag_perform_cm_subtraction = true; tag_calibration = "_cm_subtracted"; }
+void HGCalTestBeamClient::enable_cm_subtraction() { flag_perform_cm_subtraction = true; tag_calibration = "_cm_subtracted"; }
 
-void PlaygroundDQMEDAnalyzer::fill_histograms()
+void HGCalTestBeamClient::fill_histograms()
 {
     myRecorder.add_entry(adc_channel_CM, adc_double);
 
@@ -351,7 +351,7 @@ void PlaygroundDQMEDAnalyzer::fill_histograms()
     h_trigtime -> Fill(trigtime);
 }
 
-void PlaygroundDQMEDAnalyzer::fill_profiles(int globalChannelId_, double adc_double_, double adcm_double_)
+void HGCalTestBeamClient::fill_profiles(int globalChannelId_, double adc_double_, double adcm_double_)
 {
     myRunStatCollection.add_entry(globalChannelId_, adc_double, adc_channel_CM);
 
@@ -364,7 +364,7 @@ void PlaygroundDQMEDAnalyzer::fill_profiles(int globalChannelId_, double adc_dou
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
-void PlaygroundDQMEDAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+void HGCalTestBeamClient::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
     edm::ParameterSetDescription desc;
     desc.add<std::string>("folder", "HGCAL/Digis");
     desc.add<std::string>("DataType", "beam");

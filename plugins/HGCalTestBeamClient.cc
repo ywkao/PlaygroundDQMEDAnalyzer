@@ -1,7 +1,7 @@
-#include "Validation/PlaygroundDQMEDAnalyzer/interface/PlaygroundDQMEDAnalyzer.h"
+#include "DQM/HGCal/interface/HGCalTestBeamClient.h"
 
 // ------------ method called for each event  ------------
-void PlaygroundDQMEDAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+void HGCalTestBeamClient::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
     using namespace edm;
 
     eventCount_++;
@@ -128,4 +128,4 @@ void PlaygroundDQMEDAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
 } // end of analyze
 
 // define this as a plug-in
-DEFINE_FWK_MODULE(PlaygroundDQMEDAnalyzer);
+DEFINE_FWK_MODULE(HGCalTestBeamClient);
